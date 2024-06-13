@@ -1,0 +1,244 @@
+function generateProtocol(child, pastSessions) {
+    // -------- Helper functions ----------------------------------------------
+
+    // See http://stackoverflow.com/a/12646864
+    // Returns a new array with elements of the array in random order.
+    function shuffle(array) {
+        var shuffled = Ember.$.extend(true, [], array); // deep copy array
+        for (var i = array.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = shuffled[i];
+            shuffled[i] = shuffled[j];
+            shuffled[j] = temp;
+        }
+        return shuffled;
+    }
+
+    // Returns a random element of an array, and removes that element from the array
+    function pop_random(array) {
+        if (array.length) {
+            let randIndex = Math.floor(Math.random() * array.length);
+            return array.splice(randIndex, 1)[0];
+        }
+        return null;
+    }
+
+    // -------- End helper functions -------------------------------------------
+
+    // Define common (non-test-trial) frames
+    let frames = {
+        "video-config": {
+            "kind": "exp-video-config",
+            "troubleshootingIntro": ""
+        },
+        "video-consent": {
+            "kind": "exp-lookit-video-consent",
+            "template": "consent_005",
+            "PIName": "Dr. Cameron Ellis, PhD",
+            "institution": "Stanford University",
+            "PIContact": "Dr. Cameron Ellis at 650 308 6130",
+            "purpose": "Your child is invited to participate in a research study on baby cognition. The aim of this research is to investigate how babies see, learn, remember, and pay attention.",
+            "procedures": "With your permission, your child’s face and gaze will be video recorded while they are presented with a variety of stimuli. We are interested in which stimuli your child engages with for longer periods of time. We will ask you (the parent) to turn away from the screen to avoid influencing your child’s responses.",
+            "risk_statement": "The risks associated with this study are minimal. Standard computer displays will be used, involving child-friendly images and videos. If you or your child experience any discomfort, you may end the session with no penalty. The data collected will be stored securely, in compliance with Stanford University standards, minimizing the risk of a confidentiality breach. There are no anticipated risks associated with participating.",
+            "voluntary_participation": "",
+            "payment": "As a token of appreciation for your child’s participation, we will send you a digital code to a $5 e-gift card. To be eligible, your child must fall within the age range, you will need to submit a valid consent statement, and your child’s face must be visible during the consent process. After you have finished the study, we will message you with a digital code to the e-gift card within a week. We will still send you an e-gift card in the event you and your child cannot finish the study or you choose to withdraw at any time. We cannot and do not guarantee or promise that you and your child will receive any benefits from this study.",
+            "datause": "",
+            "include_databrary": true,
+            "additional_video_privacy_statement": "",
+            "gdpr": false,
+            "research_rights_statement": "If you have read this form and have decided to allow your child to participate in this project, please understand your child’s participation is voluntary and as their parent or legal guardian, you have the right to withdraw consent or discontinue participation at any time without penalty or loss of benefits to which they are otherwise entitled. The alternative is not to participate. You and your child have the right to refuse to answer particular questions.Your child’s face will be video recorded so we can track their eye movements offline for our research. The results of this research study may be presented at scientific or professional meetings or published in scientific journals.  Your child’s individual privacy will be maintained in all published and written data resulting from the study. \n\n Identifiers will be removed from identifiable private information and, after such removal, the information could be used for future research studies or distributed to another investigator for future research studies without additional informed consent from you.",
+            "additional_segments": [{
+                "title": "How long we will store your data",
+                "text": "Once the study has concluded, our research team at Stanford University will retain the data collected from you for 5 years. After which we will delete and remove any data from our servers. Lookit stores data indefinitely unless you withdraw your recordings at the end of the study.",
+
+            }]
+        },
+        "exit-survey": {
+            "kind": "exp-lookit-exit-survey",
+            "displayFullscreenOverride": true,
+            "doUseCamera": false,
+            "debriefing": {
+                "text": "This was a preliminary study on how babies can control where they look. On most trials, we showed your child a green triangle on one side of the screen, followed by a spinning pinwheel on the opposite side of the screen. We wanted to measure how long it takes your child to reorient their gaze to the spinning pinwheel, after their attention was (maybe) grabbed by the green triangle on the other side of the screen. We expect that most babies will get faster at reorienting their gaze as they learn that the shapes appear on opposite sides of the screen in a predictable way. This won't be true for all babies, potentially because they were already responding quickly, and a goal of this study is learning about how many babies show this trend. Additionally, in the babies that show this trend, we are interested in knowing how many trials it takes for them to learn this.",
+                "title": "Thank you!"
+            }
+        },
+        "start-recording-with-image": {
+            "kind": "exp-lookit-start-recording",
+            "baseDir": "https://www.mit.edu/~kimscott/placeholderstimuli/",
+            "videoTypes": [
+                "webm",
+                "mp4"
+            ],
+            "image": "peekaboo_remy.jpg",
+            "imageAnimation": "spin",
+            "displayFullscreen": true
+        },
+        "stop-recording-with-image": {
+            "kind": "exp-lookit-stop-recording",
+            "baseDir": "https://www.mit.edu/~kimscott/placeholderstimuli/",
+            "videoTypes": [
+                "webm",
+                "mp4"
+            ],
+            "image": "peekaboo_remy.jpg",
+            "imageAnimation": "spin",
+            "displayFullscreenOverride": true
+        },
+        "calibration-with-image": {
+            "kind": "exp-lookit-calibration",
+            "baseDir": "https://www.mit.edu/~kimscott/placeholderstimuli/",
+
+            "audioTypes": [
+                "ogg",
+                "mp3"
+            ],
+
+            "videoTypes": [
+                "webm",
+                "mp4"
+            ],
+
+            "calibrationImage": "peekaboo_remy.jpg",
+            "calibrationLength": 3000,
+            "calibrationPositions": [
+                "center",
+                "left",
+                "right"
+            ],
+            //"calibrationAudio": "chimes",
+            "calibrationImageAnimation": "spin",
+
+            "doRecording": true,
+            "showWaitForUploadMessage": true,
+            "waitForUploadImage": "peekaboo_remy.jpg",
+
+            "pauseVideo": "attentiongrabber",
+            "pauseAudio": "pause",
+            "pausedText": "Study paused. \n Press SPACE bar to resume. \n If you wish to quit press ESC then click Exit on the pop-up window.",
+            //"unpauseAudio": "return_after_pause",
+            "frameOffsetAfterPause": 0
+        },
+
+        "instructions-calibration": {
+            "kind": "exp-lookit-instructions",
+            "displayFullscreenOverride": true,
+            "blocks": [{
+                "text": "Thank you for participating in our study! \n\n  We are going to study where your infant is looking while we show them colorful shapes. If you have multiple screens or an external webcam, please make sure that your camera is as close to your screen as possible.\n\n The first step is for us to calibrate the camera. We will show your child a rotating face that will change positions on the screen. Make sure that the webcam has a full view of your child's face and their eyes. Also, position the webcam so that your own face is not in the display, if it is possible to do so.\n\n This phase will take about 15 seconds. Please hold your child on your lap, a comfortable distance from the screen (about an arm's length away). \n\n Click 'Next' at the bottom left of the page when your ready to begin!",
+                "title": "Gaze Calibration Phase",
+            }],
+            "showWebcam": true,
+            "nextButtonText": "Next",
+            "showPreviousButton": false
+        },
+        "instructions-experiment": {
+            "kind": "exp-lookit-instructions",
+            "displayFullscreenOverride": true,
+            "blocks": [{
+                "text": "Great! Now that we have calibrated the camera we can begin the experiment! \n\n Next, your child will be shown a set of stimuli which will take a total of 5 minutes. The stimuli will consist of forty trials of a colorful square, triangles, and a pinwheel. \n\n Please keep your child in the same position that they were during calibration, making sure that the webcam has a full view of your child's face and their eyes and that your face is not visible on the screen. \n\n Please try not to interact with your child or the experiment. This means you shouldn't narrate the experiment or point at the screen. If your child becomes upset and needs to stop, please do so by pressing 'esc' until an orange pop-up window appears on the top right of the page. The pop-up window will give you the option to select 'exit', which will then take you to the exit survey to complete the experiment. \n\n Click 'Next' at the bottom left of the page when your ready to begin!",
+                "title": "Experiment Phase"
+            }],
+            "showWebcam": true,
+            "nextButtonText": "Next",
+            "showPreviousButton": false
+        },
+        "email-survey": {
+            "kind": "exp-lookit-survey",
+            "formSchema": {
+                "schema": {
+                    "type": "object",
+                    "title": "Please fill-in your email so we can send your $5 Tango Gift Card",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "E-mail",
+                            "required": true
+                        }
+                    }
+                },
+                "options": {
+                    "fields": {
+                        "name": {
+                            "placeholder": "jane_doe@gmail.com (Your email will be exclusively utilized for the purpose of delivering your compensation, a $5 Tango gift card.)"
+                        }
+                    }
+                }
+            },
+            "nextButtonText": "Next Survey"
+        }
+    };
+
+    // Start off the frame sequence with config/consent frames; we'll add test
+    // trials as we construct them
+    let frame_sequence = ['video-config', 'video-consent', "instructions-calibration", 'start-recording-with-image', "calibration-with-image", 'stop-recording-with-image', "instructions-experiment", "start-recording-with-image"];
+
+    // Every image is just used once total, either as a target or as a distractor.
+    // We'll remove the images from these lists as they get used.
+    const videoStimuli = [
+        'Invalid_Left',
+        'Invalid_Right',
+        'Neutral_Left',
+        'Neutral_Right'
+    ];
+
+    globalTrial = 0;
+
+    for (allTrials = 0; allTrials < 10; allTrials++) {
+
+        let visualStimuli = shuffle(videoStimuli);
+
+        for (iTrial = 0; iTrial < 4; iTrial++, globalTrial++) {
+
+            // Choose a random starting point and order for the category pairings
+            let video = pop_random(visualStimuli);
+
+            thisTrial = {
+
+                "kind": "exp-lookit-video",
+
+                "video": {
+                    "loop": true,
+                    "position": "fill",
+                    "source": video
+                },
+
+                //"backgroundColor": 'rgb(50 50 50)',
+                "backgroundColor": 'rgb(255 255 255)',
+                "autoProceed": true,
+
+                "requireVideoCount": 1,
+
+                "frameOffsetAfterPause": 0,
+
+                //"doRecording":true,
+
+                "baseDir": "https://github.com/scaffolding-of-cognition-team/CounterCuing/raw/main/",
+
+                //"pauseVideo": "attentiongrabber",
+                //"pauseAudio": "pause",
+                "pausedText": "Study paused. \n Press SPACE bar to resume. \n To quit press ESC until a pop-up window appears on the top right then click exit.",
+
+                "videoTypes": [
+                    "mp4"
+                ]
+
+            };
+
+            //Store Frame
+            frameId = 'test-trial-' + (globalTrial + 1);
+
+            frames[frameId] = thisTrial;
+
+            frame_sequence.push(frameId);
+        }
+
+    }
+
+    // Finish up the frame sequence with the exit survey
+    frame_sequence = frame_sequence.concat(['stop-recording-with-image', 'email-survey', 'exit-survey']);
+
+    return {
+        frames: frames,
+        sequence: frame_sequence
+    };
+
+}
